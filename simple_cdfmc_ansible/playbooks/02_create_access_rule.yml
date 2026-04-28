@@ -1,0 +1,57 @@
+---
+- name: Create access control rule using host object
+  hosts: localhost
+  gather_facts: false
+
+  vars_files:
+    - ../group_vars/all.yml
+
+  tasks:
+    - name: Get all host objects
+      uri:
+        url: "{{ base_url }}/v1/cdfmc/api/fmc_config/v1/domain/{{ domain_uuid }}/object/hosts?expanded=true"
+        method: GET
+        headers: "{{ common_headers }}"
+        return_content: true
+        status_code: 200
+      register: host_lookup
+
+    - name: Find host object by name
+      set_fact:
+        host_obj: "{{ host_lookup.json['items'] | selectattr('name', 'equalto', src_object_name) | list | first }}"
+
+    - name: Show selected host object
+      debug:
+        msg:
+          - "Host object name: {{ host_obj.name }}"
+          - "Host object ID: {{ host_obj.id }}"
+          - "Host object type: {{ host_obj.type }}"
+
+    - name: Create access control rule
+      uri:
+        url: "{{ base_url }}/v1/cdfmc/api/fmc_config/v1/domain/{{ domain_uuid }}/policy/accesspolicies/{{ access_policy_id }}/accessrules"
+        method: POST
+        headers: "{{ common_headers }}"
+        body_format: json
+        body:
+          name: "{{ rule_name }}"
+          type: "AccessRule"
+          action: "BLOCK"
+          enabled: true
+          sourceNetworks:
+            objects:
+              - id: "{{ host_obj.id }}"
+                name: "{{ host_obj.name }}"
+                type: "{{ host_obj.type }}"
+        return_content: true
+        status_code:
+          - 201
+          - 202
+      register: rule_result
+
+    - name: Show created rule
+      debug:
+        msg:
+          - "Rule created successfully"
+          - "Rule name: {{ rule_result.json.name }}"
+          - "Rule ID: {{ rule_result.json.id }}"

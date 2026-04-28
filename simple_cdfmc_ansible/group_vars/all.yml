@@ -1,0 +1,15 @@
+---
+base_url: "https://api.apj.security.cisco.com/firewall"
+domain_uuid: "e276abec-e0f2-11e3-8169-6d9ed49b625f"
+access_policy_id: "0ad4678e-a79d-0ed3-0000-030064778522"
+
+cdfmc_api_token: "{{ lookup('env', 'CDFMC_API_TOKEN') }}"
+
+src_ip: "192.168.78.35"
+src_object_name: "ansible-host-192.168.78.35"
+rule_name: "Ansible Block Source Host"
+
+common_headers:
+  Accept: "application/json"
+  Content-Type: "application/json"
+  Authorization: "Bearer {{ cdfmc_api_token }}"

@@ -1,0 +1,20 @@
+---
+- name: Test cdFMC API token
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../group_vars/all.yml
+
+  tasks:
+    - name: Get access policy
+      uri:
+        url: "{{ base_url }}/v1/cdfmc/api/fmc_config/v1/domain/{{ domain_uuid }}/policy/accesspolicies/{{ access_policy_id }}"
+        method: GET
+        headers: "{{ common_headers }}"
+        return_content: true
+        status_code: 200
+      register: result
+
+    - name: Show policy name
+      debug:
+        msg: "Connected successfully. Policy name is {{ result.json.name }}"

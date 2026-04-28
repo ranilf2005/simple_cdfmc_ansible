@@ -1,0 +1,28 @@
+---
+- name: Create simple FMC host object
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ../group_vars/all.yml
+
+  tasks:
+    - name: Create host object
+      uri:
+        url: "{{ base_url }}/v1/cdfmc/api/fmc_config/v1/domain/{{ domain_uuid }}/object/hosts"
+        method: POST
+        headers: "{{ common_headers }}"
+        body_format: json
+        body:
+          name: "{{ src_object_name }}"
+          type: "Host"
+          value: "{{ src_ip }}"
+        return_content: true
+        status_code:
+          - 201
+          - 202
+          - 400
+      register: object_result
+
+    - name: Show object result
+      debug:
+        var: object_result.json
